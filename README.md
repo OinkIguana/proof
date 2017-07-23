@@ -11,3 +11,9 @@ do what is intended to.
 
 Used in its simplest form, this can be as basic as a type system, but with high
 quality type definitions, it can be as strong as a full formal proof.
+
+## Contributions
+
+This is a big project, which I probably do not currently have all the knowledge
+required to complete. If someone out there knows better than me about these
+things their input/knowledge would be very much appreciated.
