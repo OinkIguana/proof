@@ -51,7 +51,7 @@ executable proof
   main-is:             Main.hs
 
   -- Modules included in this executable, other than Main.
-  other-modules:       Compiler
+  other-modules:       Compiler, Parser, Analyzer
 
   -- LANGUAGE extensions used by modules in this package.
   -- other-extensions:
@@ -60,7 +60,7 @@ executable proof
   build-depends:       base >=4.8 && <4.9, split >=0.2 && <0.3, containers
 
   -- Directories containing source files.
-  hs-source-dirs:      src, src/compiler
+  hs-source-dirs:      src, src/compiler, src/parser, src/analyzer
 
   -- Base language which the package is written in.
   default-language:    Haskell2010
