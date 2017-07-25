@@ -50,9 +50,9 @@ actual code is returned, with all proofs stripped out.
   check :: String -> String -> Either CompileError String
   check proofs code =
     let (types, ast) = (parseProofs proofs, parseCode code) in
-      if analyze $ annotateCode types ast
-        then Right code
-        else Left $ CompileError "Could not compile"
+      case analyze $ annotateCode types ast of
+        Right True -> Right code
+        Left (AnalysisError message) -> Left $ CompileError $ "Could not compile. " ++ message
 
   compile :: String -> Either CompileError String
   compile file = check proofs code
