@@ -35,36 +35,50 @@ by the same AST as the code, but this transformation is handled here.
 \begin{code}
   data AST = ID String -- name
            | Type AST [AST] -- ID Parameters
+           | TypeOf AST -- Type
            | Annotation AST AST -- ID Type
            | Let AST AST AST -- ID Type Body
            | Function [AST] AST -- Parameters Body
            | Application AST [AST] -- Function Parameters
            | Exists AST AST AST -- ID Type Body
-           | ElimExists AST AST AST -- Exists [how does this work again?]
+           | IntroExists AST AST -- Type Value [will this need another argument?]
+           | ElimExists AST AST -- Exists Body [how does this work again? does it need another argument too?]
            | And AST AST -- Type Type
-           | ElimAnd AST AST -- And Body
+           | IntroAnd AST AST -- Left Right
+           | ElimAndLeft AST AST -- And Body
+           | ElimAndRight AST AST -- And Body
            | Or AST AST -- Type Type
+           | IntroOrLeft AST AST -- Or Value
+           | IntroOrRight AST AST -- Or Value
            | ElimOr AST AST AST -- Or LeftBody RightBody
            | Contradiction
-           | ElimContradiction AST AST -- Contradiction Body [do these have bodies?]
-           | TypeOf AST -- Type
+           | ElimContradiction AST AST -- Contradiction Body [does this have a body? contradiction usually means done]
            -- value nodes
            | VInteger Int -- Value
-           | VDouble Double -- Value
-           | VChar Char -- Value
-           | VSymbol String -- For
+           | VFloat Float -- Value [is this needed? or just define as a pair or in STL]
+           | VChar Char -- Value [is this needed? or just define as an int or in STL]
            | VBoolean Bool -- True/False
-           | VPair AST AST -- Head Tail
+           | VCons AST AST -- Head Tail
            | VEmpty -- empty list
+           | VSymbol String -- For
            | VNull -- the empty value
            | VUndefined -- the non-existent value
+           -- induction [do these need that 4th param like last time?]
+           | IndInteger AST AST AST -- Int BodyS BodyZ [what if it isn't natural, is it the same?]
+           -- [how to use a float? is float usage STL?]
+           -- [how to use a char? is char usage STL?]
+           | IndBoolean AST AST AST -- Bool BodyT BodyF
+           | IndList AST AST AST -- List BodyL BodyE [is this correct?]
+           -- [how to use a symbol?]
+           -- [how to use null?]
+           -- [how to use undefined?]
 
   parseProofs :: String -> AST
   parseProofs proofs = Annotation (ID "The code") (Type (ID "The proof") [])
 \end{code}
 
-Once parsing is complete the two trees are merged into one, containing the
-actual code annotated by proof terms. This is the final tree, which is returned
+Once parsing is complete the two trees are merged into one containing the
+actual code annotated by proof terms. This is the final tree which is returned
 to the Compiler to be used by the Analyzer in assuring that the program is
 valid.
 
