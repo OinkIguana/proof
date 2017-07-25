@@ -36,7 +36,10 @@ can be resolved without much trouble.
 
   takeProofs :: String -> String -> String
   takeProofs proofLine file =
-    intercalate "\n" (map (drop $ length proofLine) (filter (isPrefixOf proofLine) (splitOn "\n" file)))
+    intercalate "\n" $
+      map (drop $ length proofLine) $
+      filter (isPrefixOf proofLine)
+        (splitOn "\n" file)
 \end{code}
 
 Having separated the actual code from the proof code, it is then passed to the
@@ -44,16 +47,23 @@ Parser, and then the Analyzer to ensure that the proofs check out, before the
 actual code is returned, with all proofs stripped out.
 
 \begin{code}
-  check :: String -> String -> String
+  check :: String -> String -> Either CompileError String
   check proofs code =
-    let (definitions, ast) = (parseProofs proofs, parseCode code) in
-      if analyze definitions ast
-        then code
-        else error "Could not parse"
+    let (types, ast) = (parseProofs proofs, parseCode code) in
+      if analyze $ annotateCode types ast
+        then Right code
+        else Left $ CompileError "Could not compile"
 
-  compile :: String -> String
+  compile :: String -> Either CompileError String
   compile file = check proofs code
     where (proofs, code) = (takeProofs lineStart file, takeCode lineStart file)
+\end{code}
+
+If analysis fails, a CompileError is returned instead, allowing for the programmer
+to be notified of what went wrong.
+
+\begin{code}
+  newtype CompileError = CompileError String
 \end{code}
 
 \end{document}

@@ -20,8 +20,8 @@ process of inferring and checking types. If all works out correctly, it returns
 a True.
 
 \begin{code}
-  analyze :: Map AST AST -> AST -> Bool
-  analyze definitons ast = True
+  analyze :: AST -> Bool
+  analyze ast = True
 \end{code}
 
 \end{document}

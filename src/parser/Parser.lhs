@@ -24,7 +24,7 @@ lexer/parser of the language being proven.
   parseCode code = transformAST NativeASTNode
 
   transformAST :: NativeAST -> AST
-  transformAST native = ID "Hello world"
+  transformAST native = ID "The code"
 \end{code}
 
 Once the code has been turned into a NativeAST, it is then transformed into
@@ -34,26 +34,43 @@ by the same AST as the code, but this transformation is handled here.
 
 \begin{code}
   data AST = ID String -- name
-           | Let AST AST AST -- ID Type Body
            | Type AST [AST] -- ID Parameters
-           | Application AST [AST] -- Function Parameters
+           | Annotation AST AST -- ID Type
+           | Let AST AST AST -- ID Type Body
            | Function [AST] AST -- Parameters Body
+           | Application AST [AST] -- Function Parameters
            | Exists AST AST AST -- ID Type Body
-           | TypeOf AST -- Type
+           | ElimExists AST AST AST -- Exists [how does this work again?]
+           | And AST AST -- Type Type
+           | ElimAnd AST AST -- And Body
+           | Or AST AST -- Type Type
+           | ElimOr AST AST AST -- Or LeftBody RightBody
            | Contradiction
-           -- some value types, probably needed
+           | ElimContradiction AST AST -- Contradiction Body [do these have bodies?]
+           | TypeOf AST -- Type
+           -- value nodes
            | VInteger Int -- Value
            | VDouble Double -- Value
            | VChar Char -- Value
            | VSymbol String -- For
            | VBoolean Bool -- True/False
            | VPair AST AST -- Head Tail
+           | VEmpty -- empty list
+           | VNull -- the empty value
+           | VUndefined -- the non-existent value
 
-  parseProofs :: String -> Map AST AST
-  parseProofs proofs = Map.empty
+  parseProofs :: String -> AST
+  parseProofs proofs = Annotation (ID "The code") (Type (ID "The proof") [])
 \end{code}
 
-Once parsing is complete the parsed definitions are placed into a map which, is
-then returned to the Compiler to be passed on to the Analyzer.
+Once parsing is complete the two trees are merged into one, containing the
+actual code annotated by proof terms. This is the final tree, which is returned
+to the Compiler to be used by the Analyzer in assuring that the program is
+valid.
+
+\begin{code}
+  annotateCode :: AST -> AST -> AST
+  annotateCode code proofs = Annotation (ID "The code") (Type (ID "The proof") [])
+\end{code}
 
 \end{document}
