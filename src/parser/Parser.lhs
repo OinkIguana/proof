@@ -93,8 +93,8 @@ to the Compiler to be used by the Analyzer in assuring that the program is
 valid.
 
 \begin{code}
-  annotateCode :: AST -> AST -> AST
-  annotateCode code proofs = Annotation (ID "The code") (Type (ID "The proof") [])
+  annotates :: AST -> AST -> AST
+  annotates proof code = Annotation code proof
 \end{code}
 
 \end{document}

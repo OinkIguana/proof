@@ -14,6 +14,7 @@ module Compiler where
   import Data.List.Split
   import Parser
   import Analyzer
+  import Lexer (lexify)
 \end{code}
 
 Lines of proof code are identified by a prefix, ``\textgreater'' by default
@@ -38,8 +39,8 @@ can be resolved without much trouble.
   takeProofs proofLine file =
     intercalate "\n" $
       map (drop $ length proofLine) $
-      filter (isPrefixOf proofLine)
-        (splitOn "\n" file)
+      filter (isPrefixOf proofLine) $
+      splitOn "\n" file
 \end{code}
 
 Having separated the actual code from the proof code, it is then passed to the
@@ -47,16 +48,17 @@ Parser, and then the Analyzer to ensure that the proofs check out, before the
 actual code is returned, with all proofs stripped out.
 
 \begin{code}
-  check :: String -> String -> Either CompileError String
-  check proofs code =
-    let (types, ast) = (parseProofs proofs, parseCode code) in
-      case analyze $ annotateCode types ast of
-        Right True -> Right code
-        Left (AnalysisError message) -> Left $ CompileError $ "Could not compile. " ++ message
+  check :: AST -> Either CompileError Bool
+  check ast =
+    case analyze ast of
+      Right True                    -> Right True
+      Left (AnalysisError message)  -> Left $ CompileError $ "Could not compile. " ++ message
 
   compile :: String -> Either CompileError String
-  compile file = check proofs code
-    where (proofs, code) = (takeProofs lineStart file, takeCode lineStart file)
+  compile file = case check (parseProofs proof `annotates` parseCode code) of
+      Right True  -> Right code
+      Left err    -> Left err
+    where (proof, code) = (takeProofs lineStart file, takeCode lineStart file)
 \end{code}
 
 If analysis fails, a \ident{CompileError} is returned instead, allowing for the
