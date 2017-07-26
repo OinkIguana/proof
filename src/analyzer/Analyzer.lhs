@@ -17,12 +17,13 @@ module Analyzer where
 
 The analyze function is the heart of this whole system, kicking off the whole
 process of inferring and checking types. If all works out correctly, it returns
-a True. If not, an AnalysisError.
+a \ident{True}. If not, an \ident{AnalysisError}.
 
 \begin{code}
   analyze :: AST -> Either AnalysisError Bool
   analyze ast = Right True
 
+  -- TODO: investigate proper error handling methods
   newtype AnalysisError = AnalysisError String
 \end{code}
 

@@ -59,10 +59,11 @@ actual code is returned, with all proofs stripped out.
     where (proofs, code) = (takeProofs lineStart file, takeCode lineStart file)
 \end{code}
 
-If analysis fails, a CompileError is returned instead, allowing for the programmer
-to be notified of what went wrong.
+If analysis fails, a \ident{CompileError} is returned instead, allowing for the
+programmer to be notified of what went wrong.
 
 \begin{code}
+  -- TODO: investigate proper error handling methods
   newtype CompileError = CompileError String
 \end{code}
 

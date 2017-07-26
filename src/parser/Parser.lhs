@@ -12,6 +12,7 @@ into an abstract syntax tree.
 module Parser where
   import Data.Map (Map)
   import qualified Data.Map.Strict as Map
+  import Lexer (lexify, Token)
 \end{code}
 
 The NativeAST is, for now, a placeholder for whatever type is produced by the
@@ -72,9 +73,18 @@ by the same AST as the code, but this transformation is handled here.
            -- [how to use a symbol?]
            -- [how to use null?]
            -- [how to use undefined?]
+\end{code}
 
+The first step in parsing the proof code is, of course, lexifying it. This step
+is taken on by the Lexer.
+
+\begin{code}
   parseProofs :: String -> AST
-  parseProofs proofs = Annotation (ID "The code") (Type (ID "The proof") [])
+  parseProofs proofText =
+    parse $ lexify proofText
+
+  parse :: [Token] -> AST
+  parse _ = ID "The proof"
 \end{code}
 
 Once parsing is complete the two trees are merged into one containing the
