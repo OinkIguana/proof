@@ -17,7 +17,8 @@ module Lexer where
 These tokens are represented as \ident{LexerToken}s, and are as follows
 
 \begin{code}
-  data Token  = ID String
+  data Token  = BOF
+              | ID String
               | LParen
               | RParen
               | LBrack
@@ -42,6 +43,7 @@ These tokens are represented as \ident{LexerToken}s, and are as follows
               | Type
               | TypeOf
               | Val
+              | EOF
               deriving (Show)
 \end{code}
 
@@ -151,10 +153,13 @@ continually munch the text until no text remains, producing the full list of
 munched tokens.
 
 \begin{code}
-  lexify :: String -> [Token]
-  lexify [] = []
-  lexify code = token : lexify rest
+  doLexify :: String -> [Token]
+  doLexify [] = [EOF]
+  doLexify code = token : doLexify rest
     where (token, rest) = munch code
+
+  lexify :: String -> [Token]
+  lexify code = BOF : doLexify code
 \end{code}
 
 \end{document}

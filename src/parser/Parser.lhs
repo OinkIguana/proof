@@ -12,6 +12,7 @@ into an abstract syntax tree.
 module Parser where
   import Data.Map (Map)
   import qualified Data.Map.Strict as Map
+  import qualified Lexer
   import Lexer (lexify, Token)
 \end{code}
 
@@ -76,15 +77,21 @@ by the same AST as the code, but this transformation is handled here.
 \end{code}
 
 The first step in parsing the proof code is, of course, lexifying it. This step
-is taken on by the Lexer.
+is taken on by the Lexer. After that, we move on to parsing, using the LR(1)
+algorithm. I think. That's what I'm going for anyway.
 
 \begin{code}
+  data State = SStart | SEmpty | SLet
+
   parseProofs :: String -> AST
-  parseProofs proofText =
-    parse $ lexify proofText
+  parseProofs proofText = parse $ lexify proofText
 
   parse :: [Token] -> AST
-  parse _ = ID "The proof"
+  parse = lrParse [SStart] []
+
+  -- maybe this is the place for some quasiquotes so I can just write my production rules or something?
+  lrParse :: [State] -> [AST] -> [Token] -> AST
+  lrParse [SStart] [] (Lexer.BOF : rest) = lrParse [SStart] [] rest
 \end{code}
 
 Once parsing is complete the two trees are merged into one containing the
