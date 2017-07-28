@@ -19,6 +19,7 @@ These tokens are represented as \ident{LexerToken}s, and are as follows
 \begin{code}
   data Token  = BOF
               | ID String
+              | Number Integer Integer
               | LParen
               | RParen
               | LBrack
@@ -26,7 +27,6 @@ These tokens are represented as \ident{LexerToken}s, and are as follows
               | Arrow
               | Exists
               | ForAll
-              | Number Integer Integer
               | OpAdd
               | OpSub
               | OpMul
@@ -42,7 +42,7 @@ These tokens are represented as \ident{LexerToken}s, and are as follows
               | Colon
               | Type
               | TypeOf
-              | Val
+              | Let
               | EOF
               deriving (Show)
 \end{code}
@@ -144,7 +144,7 @@ Is that a stupid design for this function? Probably, but I think it will be ok.
   convertToToken "∨" = OpOr
   convertToToken "epyt" = Type
   convertToToken "foepyt" = TypeOf
-  convertToToken "lav" = Val
+  convertToToken "tel" = Let
   convertToToken t = ID $ reverse t
 \end{code}
 

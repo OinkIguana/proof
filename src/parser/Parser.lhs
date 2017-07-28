@@ -13,7 +13,6 @@ module Parser where
   import Data.Map (Map)
   import qualified Data.Map.Strict as Map
   import qualified Lexer
-  import Lexer (lexify, Token)
 \end{code}
 
 The NativeAST is, for now, a placeholder for whatever type is produced by the
@@ -26,7 +25,7 @@ lexer/parser of the language being proven.
   parseCode code = transformAST NativeASTNode
 
   transformAST :: NativeAST -> AST
-  transformAST native = ID "The code"
+  transformAST native = ID "The code" VEmpty
 \end{code}
 
 Once the code has been turned into a NativeAST, it is then transformed into
@@ -35,9 +34,9 @@ converted into the definitions used to prove the program. These are represented
 by the same AST as the code, but this transformation is handled here.
 
 \begin{code}
-  data AST = ID String -- name
-           | Type AST [AST] -- ID Parameters
-           | TypeOf AST -- Type
+  data AST = ID String AST -- name ArgumentList
+           | ArgumentList AST AST -- Annotation ArgumentList
+           | TypeOf AST -- ID
            | Annotation AST AST -- ID Type
            | Let AST AST AST -- ID Type Body
            | Function [AST] AST -- Parameters Body
@@ -81,17 +80,57 @@ is taken on by the Lexer. After that, we move on to parsing, using the LR(1)
 algorithm. I think. That's what I'm going for anyway.
 
 \begin{code}
-  data State = SStart | SEmpty | SLet
-
   parseProofs :: String -> AST
-  parseProofs proofText = parse $ lexify proofText
+  parseProofs proofText = parse $ Lexer.lexify proofText
 
-  parse :: [Token] -> AST
-  parse = lrParse [SStart] []
+  parse :: [Lexer.Token] -> AST
+  parse tokens = fst $ stateStart $ map Left tokens
 
-  -- maybe this is the place for some quasiquotes so I can just write my production rules or something?
-  lrParse :: [State] -> [AST] -> [Token] -> AST
-  lrParse [SStart] [] (Lexer.BOF : rest) = lrParse [SStart] [] rest
+  type StateFn = [Either Lexer.Token AST] -> (AST, [Either Lexer.Token AST])
+
+  stateStart :: StateFn
+  stateStart (Left Lexer.BOF : rest) = stateDefns rest
+
+  stateDefns :: StateFn
+  stateDefns (Left Lexer.Type : rest) = stateTypeDef rest
+  stateDefns (Left Lexer.Let : rest) = stateLet rest
+
+  stateTypeDef :: StateFn
+  stateTypeDef rest =
+    let (name, rest) = stateID rest in
+      let (args, rest) = stateType rest in
+        let (body, rest) = stateDefns rest in
+          (Let name args body, rest)
+
+  stateLet :: StateFn
+  stateLet rest =
+    let (name, rest) = stateID rest in
+      let (typ, rest) = stateStart rest in
+        let (body, rest) = stateDefns rest in
+          (Let name typ body, rest)
+
+  stateID :: StateFn
+  stateID (Left (Lexer.ID name) : rest) =
+    let (args, rest) = stateTypeArgs rest in
+      (ID name args, rest)
+
+  stateTypeArgs :: StateFn
+  stateTypeArgs (Left Lexer.LBrack : rest) = stateTypeArgs rest
+  stateTypeArgs (Left Lexer.RBrack : rest) = (VEmpty, rest)
+  stateTypeArgs rest =
+    let (ann, rest) = stateAnnotation rest in
+      let (end, rest) = stateTypeArgs rest in
+        (ArgumentList ann end, rest)
+
+  stateAnnotation :: StateFn
+  stateAnnotation rest =
+    let (name, rest) = stateID rest in
+      let (typ, rest) = stateStart rest in
+        (Annotation name typ, rest)
+
+  -- TODO: this one very complex
+  stateType :: StateFn
+  stateType _ = (ID "The type!" VEmpty, [])
 \end{code}
 
 Once parsing is complete the two trees are merged into one containing the
