@@ -115,17 +115,20 @@ algorithm. I think. That's what I'm going for anyway.
       (ID name args, rest)
 
   stateTypeArgs :: StateFn
-  stateTypeArgs (Left Lexer.LBrack : rest) = stateTypeArgs rest
-  stateTypeArgs (Left Lexer.RBrack : rest) = (VEmpty, rest)
-  stateTypeArgs rest =
+  stateTypeArgs (Left Lexer.LBrack : rest) = stateTypeArgsList rest
+  stateTypeArgs rest = (VEmpty, rest)
+
+  stateTypeArgsList :: StateFn
+  stateTypeArgsList (Left Lexer.RBrack : rest) = (VEmpty, rest)
+  stateTypeArgsList rest =
     let (ann, rest) = stateAnnotation rest in
-      let (end, rest) = stateTypeArgs rest in
+      let (end, rest) = stateTypeArgsList rest in
         (ArgumentList ann end, rest)
 
   stateAnnotation :: StateFn
   stateAnnotation rest =
     let (name, rest) = stateID rest in
-      let (typ, rest) = stateStart rest in
+      let (typ, rest) = stateType rest in
         (Annotation name typ, rest)
 
   -- TODO: this one very complex

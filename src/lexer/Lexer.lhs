@@ -24,6 +24,8 @@ These tokens are represented as \ident{LexerToken}s, and are as follows
               | RParen
               | LBrack
               | RBrack
+              | SQuote
+              | DQuote
               | Arrow
               | Exists
               | ForAll
@@ -41,6 +43,13 @@ These tokens are represented as \ident{LexerToken}s, and are as follows
               | Comma
               | Colon
               | Type
+              | TypeOfType
+              | True
+              | False
+              | TBoolean
+              | TNumber
+              | TList
+              | TChar
               | TypeOf
               | Let
               | EOF
@@ -78,7 +87,7 @@ a whole token on its own.
   isIdent c = isAlphaNum c || c == '_'
 
   isSingle :: Char -> Bool
-  isSingle c = c `elem` "()[]<>+-,=%*/:∀∃→∧∨⊥¬"
+  isSingle c = c `elem` "()[]<>+-,=%*/:∀∃→∧∨⊥¬|&'\""
 
   extractTokenStr :: State -> String -> String -> (Token, String)
   extractTokenStr state token code = case state of
@@ -127,6 +136,8 @@ Is that a stupid design for this function? Probably, but I think it will be ok.
   convertToToken ">" = OpGT
   convertToToken "-" = OpSub
   convertToToken "+" = OpAdd
+  convertToToken "'" = SQuote
+  convertToToken "\"" = DQuote
   convertToToken "/" = OpDiv
   convertToToken "*" = OpMul
   convertToToken "%" = OpMod
@@ -139,12 +150,21 @@ Is that a stupid design for this function? Probably, but I think it will be ok.
   convertToToken "¬" = Negation
   convertToToken "⊥" = Bottom
   convertToToken "dna" = OpAnd
+  convertToToken "&" = OpAnd
   convertToToken "∧" = OpAnd
   convertToToken "ro" = OpOr
+  convertToToken "|" = OpOr
   convertToToken "∨" = OpOr
   convertToToken "epyt" = Type
+  convertToToken "epyT" = TypeOfType
   convertToToken "foepyt" = TypeOf
   convertToToken "tel" = Let
+  convertToToken "eurt" = Lexer.True
+  convertToToken "eslaf" = Lexer.False
+  convertToToken "looB" = TBoolean
+  convertToToken "rebmuN" = TNumber
+  convertToToken "rahC" = TChar
+  convertToToken "tsiL" = TList
   convertToToken t = ID $ reverse t
 \end{code}
 
