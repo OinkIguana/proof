@@ -19,7 +19,7 @@ These tokens are represented as \ident{LexerToken}s, and are as follows
 \begin{code}
   data Token  = BOF
               | ID String
-              | Number Integer Integer
+              | Natural Integer
               | LParen
               | RParen
               | LBrack
@@ -27,6 +27,7 @@ These tokens are represented as \ident{LexerToken}s, and are as follows
               | SQuote
               | DQuote
               | Arrow
+              | Lambda
               | Exists
               | ForAll
               | OpAdd
@@ -34,6 +35,7 @@ These tokens are represented as \ident{LexerToken}s, and are as follows
               | OpMul
               | OpDiv
               | OpMod
+              | OpEqual
               | OpLT
               | OpGT
               | OpAnd
@@ -42,16 +44,17 @@ These tokens are represented as \ident{LexerToken}s, and are as follows
               | Bottom
               | Comma
               | Colon
+              | Equiv
               | Type
-              | TypeOfType
               | True
               | False
               | TBoolean
-              | TNumber
+              | TNatural
               | TList
               | TChar
               | TypeOf
               | Let
+              | Native
               | EOF
               deriving (Show)
 \end{code}
@@ -71,7 +74,7 @@ defining that, however, we require a few helper definitions.
 First are the states which the state machine used for munching can be in:
 
 \begin{code}
-  data State = Start | Identifier | Numeric | NumericPoint | Single | PossibleArrow
+  data State = Start | Identifier | Number | Single | PossibleArrow | PossibleEquiv
 \end{code}
 
 Then, we have a few helper functions which can identify classes of characters.
@@ -87,32 +90,30 @@ a whole token on its own.
   isIdent c = isAlphaNum c || c == '_'
 
   isSingle :: Char -> Bool
-  isSingle c = c `elem` "()[]<>+-,=%*/:∀∃→∧∨⊥¬|&'\""
+  isSingle c = c `elem` "()[]<>+-,.=%*/:∀∃→∧∨⊥¬|&'\"≡λ\\†"
 
   extractTokenStr :: State -> String -> String -> (Token, String)
   extractTokenStr state token code = case state of
     Start         -> case code of
-      '.' : rest            -> extractTokenStr NumericPoint ".0" rest
       '-' : rest            -> extractTokenStr PossibleArrow "-" rest
+      ':' : rest            -> extractTokenStr PossibleEquiv ":" rest
       l : rest | isAlpha l || l == '_'
                             -> extractTokenStr Identifier [l] rest
-      n : rest | isDigit n  -> extractTokenStr Numeric [n] rest
+      n : rest | isDigit n  -> extractTokenStr Number [n] rest
       o : rest | isSingle o -> extractTokenStr Single [o] rest
       w : rest | isSpace w  -> extractTokenStr Start [] rest
       _                     -> error $ "Lexer could not process character sequence " ++ code -- TODO: LexerError
     Identifier    -> case code of
       l : rest | isIdent l  -> extractTokenStr Identifier (l : token) rest
       _                     -> (convertToToken token, code)
-    Numeric       -> case code of
-      '.' : rest            -> extractTokenStr NumericPoint ('.' : token) rest
-      l : rest | isDigit l  -> extractTokenStr Numeric (l : token) rest
-      _                     -> (Number (read $ reverse token) 0, code)
-    NumericPoint  -> case code of
-      l : rest | isDigit l  -> extractTokenStr NumericPoint (l : token) rest
-      _                     -> (Number (read left) (read right), code)
-                                where [left, right] = map reverse $ reverse $ splitOn "." token
+    Number        -> case code of
+      l : rest | isDigit l  -> extractTokenStr Number (l : token) rest
+      _                     -> (Natural $ read $ reverse token, code)
     PossibleArrow -> case code of
       '>' : rest            -> extractTokenStr Single ">-" rest
+      _                     -> (convertToToken token, code)
+    PossibleEquiv -> case code of
+      '=' : rest            -> extractTokenStr Single "=:" rest
       _                     -> (convertToToken token, code)
     Single        -> (convertToToken token, code)
 \end{code}
@@ -140,10 +141,13 @@ Is that a stupid design for this function? Probably, but I think it will be ok.
   convertToToken "\"" = DQuote
   convertToToken "/" = OpDiv
   convertToToken "*" = OpMul
+  convertToToken "=" = OpEqual
   convertToToken "%" = OpMod
   convertToToken ":" = Colon
   convertToToken "," = Comma
   convertToToken "∃" = Exists
+  convertToToken "λ" = Lambda
+  convertToToken "\\" = Lambda
   convertToToken "stsixe" = Exists
   convertToToken "∀" = ForAll
   convertToToken "llarof" = ForAll
@@ -155,14 +159,17 @@ Is that a stupid design for this function? Probably, but I think it will be ok.
   convertToToken "ro" = OpOr
   convertToToken "|" = OpOr
   convertToToken "∨" = OpOr
+  convertToToken "=:" = Equiv
+  convertToToken "≡" = Equiv
+  convertToToken "†" = Native
   convertToToken "epyt" = Type
-  convertToToken "epyT" = TypeOfType
+  convertToToken "epyT" = Type
   convertToToken "foepyt" = TypeOf
   convertToToken "tel" = Let
   convertToToken "eurt" = Lexer.True
   convertToToken "eslaf" = Lexer.False
   convertToToken "looB" = TBoolean
-  convertToToken "rebmuN" = TNumber
+  convertToToken "larutaN" = TNatural
   convertToToken "rahC" = TChar
   convertToToken "tsiL" = TList
   convertToToken t = ID $ reverse t
