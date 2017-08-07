@@ -12,7 +12,8 @@ ensures that everything is valid.
 module Analyzer where
   import Data.Map (Map)
   import qualified Data.Map.Strict as Map
-  import Parser
+  import AST
+  import Result
 \end{code}
 
 The analyze function is the heart of this whole system, kicking off the whole
@@ -20,11 +21,8 @@ process of inferring and checking types. If all works out correctly, it returns
 a \ident{True}. If not, an \ident{AnalysisError}.
 
 \begin{code}
-  analyze :: AST -> Either AnalysisError Bool
-  analyze ast = Right True
-
-  -- TODO: investigate proper error handling methods
-  newtype AnalysisError = AnalysisError String
+  analyze :: AST -> Result Bool
+  analyze ast = Ok True
 \end{code}
 
 \end{document}

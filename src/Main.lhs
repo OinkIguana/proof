@@ -16,14 +16,15 @@ module Main where
   import System.Environment
   import System.IO
   import Compiler
+  import Result
 
   main :: IO ()
   main = do
     args <- getArgs
     file <- readFile (head args)
     case compile file of
-      Right code -> putStrLn code
-      Left (CompileError issue) -> hPutStrLn stderr issue
+      Ok code -> putStrLn code
+      Fail issue -> hPutStrLn stderr issue
 \end{code}
 
 \end{document}

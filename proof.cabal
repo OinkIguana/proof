@@ -51,16 +51,16 @@ executable proof
   main-is:             Main.lhs
 
   -- Modules included in this executable, other than Main.
-  other-modules:       Compiler, Parser, Analyzer, Lexer
+  other-modules:       Compiler, Parser, Analyzer, Lexer, Happy, AST, Result
 
   -- LANGUAGE extensions used by modules in this package.
   -- other-extensions:
 
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.8 && <4.9, split >=0.2 && <0.3, containers
+  build-depends:       base >=4.8 && <4.9, split >=0.2 && <0.3, containers, array
 
   -- Directories containing source files.
-  hs-source-dirs:      src, src/compiler, src/parser, src/analyzer, src/lexer
+  hs-source-dirs:      src, src/compiler, src/parser, src/analyzer, src/lexer, src/parser/happy, src/ast, src/result
 
   -- Base language which the package is written in.
   default-language:    Haskell2010

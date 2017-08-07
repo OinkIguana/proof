@@ -15,6 +15,8 @@ module Compiler where
   import Parser
   import Analyzer
   import Lexer (lexify)
+  import AST
+  import Result
 \end{code}
 
 Lines of proof code are identified by a prefix, ``\textgreater'' by default
@@ -48,25 +50,15 @@ Parser, and then the Analyzer to ensure that the proofs check out, before the
 actual code is returned, with all proofs stripped out.
 
 \begin{code}
-  check :: AST -> Either CompileError Bool
-  check ast =
-    case analyze ast of
-      Right True                    -> Right True
-      Left (AnalysisError message)  -> Left $ CompileError $ "Could not compile. " ++ message
+  check :: AST -> Result Bool
+  check = analyze
 
-  compile :: String -> Either CompileError String
-  compile file = case check (parseProofs proof `annotates` parseCode code) of
-      Right True  -> Right code
-      Left err    -> Left err
-    where (proof, code) = (takeProofs lineStart file, takeCode lineStart file)
-\end{code}
-
-If analysis fails, a \ident{CompileError} is returned instead, allowing for the
-programmer to be notified of what went wrong.
-
-\begin{code}
-  -- TODO: investigate proper error handling methods
-  newtype CompileError = CompileError String
+  compile :: String -> Result String
+  compile file =
+    let (proof, code) = (takeProofs lineStart file, takeCode lineStart file) in
+      parseProofs proof
+      `thenR` \x -> check (x `annotates` parseCode code)
+      `thenR` \x -> Ok code
 \end{code}
 
 \end{document}

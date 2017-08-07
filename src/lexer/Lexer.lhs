@@ -19,7 +19,7 @@ These tokens are represented as \ident{LexerToken}s, and are as follows
 \begin{code}
   data Token  = BOF
               | ID String
-              | Natural Integer
+              | Natural Int
               | LParen
               | RParen
               | LBrack

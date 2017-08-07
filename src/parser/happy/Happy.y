@@ -1,10 +1,13 @@
 {
-module HappyParser where
-  import qualified Lexer
+module Happy where
+import qualified Lexer
+import AST
+import Result
 }
 
-%name parseProofs
+%name parse
 %tokentype { Lexer.Token }
+%monad { Result } { thenR } { returnR }
 %error { parseError }
 
 %token
@@ -23,7 +26,7 @@ module HappyParser where
   '≡' { Lexer.Equiv }
   '∃' { Lexer.Exists }
   '∀' { Lexer.ForAll }
-  '&' { Lexer.OpAdd }
+  '+' { Lexer.OpAdd }
   '-' { Lexer.OpSub }
   '*' { Lexer.OpMul }
   '/' { Lexer.OpDiv }
@@ -38,7 +41,7 @@ module HappyParser where
   ',' { Lexer.Comma }
   ':' { Lexer.Colon }
   'λ' { Lexer.Lambda }
-  '†' { Lexer.Dagger }
+  '†' { Lexer.Native }
   Type { Lexer.Type }
   True { Lexer.True }
   False { Lexer.False }
@@ -57,16 +60,16 @@ Program   : BOF decls EOF                       { Scope (reverse $2) }
 decls     : decls decl                          { $2 : $1 }
           | {- empty -}                         { [] }
 decl      : Let id ':' type '≡' impl            { Let $2 $4 $6 }
-id        : ID paramlist                        { ID $1 $2 }
+id        : ID paramlist                        { ID $1 (ArgumentList $2) }
 paramlist : '[' annlist ']'                     { $2 }
           | {- empty -}                         { [] }
-annlist   : ann, annlist                        { $1 : $2 }
+annlist   : ann ',' annlist                     { $1 : $3 }
           | ann                                 { [$1] }
           | {- empty -}                         { [] }
 ann       : ID ':' type                         { Annotation $1 $3 }
-type      : TypeOf type                         { TypeOf type }
-          | ID arglist                          { ID $1 $2 }
-          | '¬' type                            { Arrow (Annotation "_" $1) Contradiction }
+type      : TypeOf type                         { TypeOf $2 }
+          | ID arglist                          { ID $1 (ArgumentList $2) }
+          | '¬' type                            { Arrow (Annotation "_" $2) Contradiction }
           | type '→' type                       { Arrow (Annotation "_" $1) $3 }
           | '∀' '(' ann ')' '→' impl            { Arrow $3 $6 }
           | '∃' '(' ann ')' '→' impl            { Exists $3 $6 }
@@ -74,30 +77,35 @@ type      : TypeOf type                         { TypeOf type }
           | type '&' type                       { And $1 $3 }
           | Type                                { TypeOf (TypeOf VNull) }
           | TNatural                            { TypeOf (VNatural 0) }
-          | TBoolean                            { TypeOf (VBoolean true) }
+          | TBoolean                            { TypeOf (VBoolean True) }
           | TList                               { TypeOf VEmpty }
-          | TChar                               { TypeOf (VChar 'a')}
-          | TSymbol                             { TypeOf (Symbol "") }
+          | TChar                               { TypeOf (VChar 'a') }
+          | TSymbol                             { TypeOf (VSymbol "") }
 arglist   : '[' vallist ']'                     { $2 }
           | {- empty -}                         { [] }
-vallist   : val, vallist                        { $1 : $2 }
+vallist   : val ',' vallist                     { $1 : $3 }
           | val                                 { [$1] }
           | {- empty -}                         { [] }
-func      : 'λ' ID '→' val                      { Function $2 $4 }
-callable  : '(' func ')'                        { $1 }
-          | ID                                  { ID $1 [] }
+func      : 'λ' ID '→' val                      { Function (ID $2 (ArgumentList [])) $4 }
+callable  : '(' func ')'                        { $2 }
+          | ID                                  { ID $1 (ArgumentList []) }
 val       : True                                { VBoolean True }
           | False                               { VBoolean False }
           | Natural                             { VNatural $1 }
           | Null                                { VNull }
           | Undefined                           { VUndefined }
           | '"' ID '"'                          { VSymbol $2 }
-          | '\'' ID '\''                        { if (length $2) == 1 then VChar (head $2) else error }
+          | '\'' ID '\''                        {% if (length $2) == 1 then Ok (VChar (head $2)) else Fail "Char value must be one character long" }
           | '[' ']'                             { VEmpty }
-          | lval ':' ':' lval                   { VCons $1 $3 }
+          | val ':' ':' val                     { VCons $1 $4 }
           | '⊥'                                 { Contradiction }
           | func                                { $1 }
-          | '(' callable rval ')'               { Application $2 $3 }
-          | ID                                  { ID $1 [] }
+          | '(' callable val ')'                { Application $2 $3 }
+          | ID                                  { ID $1 (ArgumentList []) }
 impl      : '†'                                 { Insert }
           | val                                 { $1 }
+
+{
+parseError :: [Lexer.Token] -> Result a
+parseError _ = Fail "Parse Error"
+}
