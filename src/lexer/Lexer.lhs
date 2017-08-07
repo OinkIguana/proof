@@ -48,8 +48,11 @@ These tokens are represented as \ident{LexerToken}s, and are as follows
               | Type
               | True
               | False
+              | Null
+              | Undefined
               | TBoolean
               | TNatural
+              | TSymbol
               | TList
               | TChar
               | TypeOf
@@ -127,51 +130,53 @@ Is that a stupid design for this function? Probably, but I think it will be ok.
 
 \begin{code}
   convertToToken :: String -> Token
-  convertToToken "→" = Arrow
-  convertToToken ">-" = Arrow
-  convertToToken "(" = LParen
-  convertToToken ")" = RParen
-  convertToToken "[" = LBrack
-  convertToToken "]" = RBrack
-  convertToToken "<" = OpLT
-  convertToToken ">" = OpGT
-  convertToToken "-" = OpSub
-  convertToToken "+" = OpAdd
-  convertToToken "'" = SQuote
-  convertToToken "\"" = DQuote
-  convertToToken "/" = OpDiv
-  convertToToken "*" = OpMul
-  convertToToken "=" = OpEqual
-  convertToToken "%" = OpMod
-  convertToToken ":" = Colon
-  convertToToken "," = Comma
-  convertToToken "∃" = Exists
-  convertToToken "λ" = Lambda
-  convertToToken "\\" = Lambda
-  convertToToken "stsixe" = Exists
-  convertToToken "∀" = ForAll
-  convertToToken "llarof" = ForAll
-  convertToToken "¬" = Negation
-  convertToToken "⊥" = Bottom
-  convertToToken "dna" = OpAnd
-  convertToToken "&" = OpAnd
-  convertToToken "∧" = OpAnd
-  convertToToken "ro" = OpOr
-  convertToToken "|" = OpOr
-  convertToToken "∨" = OpOr
-  convertToToken "=:" = Equiv
-  convertToToken "≡" = Equiv
-  convertToToken "†" = Native
-  convertToToken "epyt" = Type
-  convertToToken "epyT" = Type
-  convertToToken "foepyt" = TypeOf
-  convertToToken "tel" = Let
-  convertToToken "eurt" = Lexer.True
-  convertToToken "eslaf" = Lexer.False
-  convertToToken "looB" = TBoolean
-  convertToToken "larutaN" = TNatural
-  convertToToken "rahC" = TChar
-  convertToToken "tsiL" = TList
+  convertToToken "→"          = Arrow
+  convertToToken ">-"         = Arrow
+  convertToToken "("          = LParen
+  convertToToken ")"          = RParen
+  convertToToken "["          = LBrack
+  convertToToken "]"          = RBrack
+  convertToToken "<"          = OpLT
+  convertToToken ">"          = OpGT
+  convertToToken "-"          = OpSub
+  convertToToken "+"          = OpAdd
+  convertToToken "'"          = SQuote
+  convertToToken "\""         = DQuote
+  convertToToken "/"          = OpDiv
+  convertToToken "*"          = OpMul
+  convertToToken "="          = OpEqual
+  convertToToken "%"          = OpMod
+  convertToToken ":"          = Colon
+  convertToToken ","          = Comma
+  convertToToken "∃"          = Exists
+  convertToToken "λ"          = Lambda
+  convertToToken "\\"         = Lambda
+  convertToToken "stsixe"     = Exists
+  convertToToken "∀"          = ForAll
+  convertToToken "llarof"     = ForAll
+  convertToToken "¬"          = Negation
+  convertToToken "⊥"          = Bottom
+  convertToToken "dna"        = OpAnd
+  convertToToken "&"          = OpAnd
+  convertToToken "∧"          = OpAnd
+  convertToToken "ro"         = OpOr
+  convertToToken "|"          = OpOr
+  convertToToken "∨"          = OpOr
+  convertToToken "=:"         = Equiv
+  convertToToken "≡"          = Equiv
+  convertToToken "†"          = Native
+  convertToToken "llun"       = Null
+  convertToToken "denifednu"  = Undefined
+  convertToToken "epyT"       = Type
+  convertToToken "foepyt"     = TypeOf
+  convertToToken "tel"        = Let
+  convertToToken "eurt"       = Lexer.True
+  convertToToken "eslaf"      = Lexer.False
+  convertToToken "looB"       = TBoolean
+  convertToToken "larutaN"    = TNatural
+  convertToToken "lobmyS"     = TSymbol
+  convertToToken "rahC"       = TChar
+  convertToToken "tsiL"       = TList
   convertToToken t = ID $ reverse t
 \end{code}
 

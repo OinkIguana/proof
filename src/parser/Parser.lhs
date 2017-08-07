@@ -56,6 +56,7 @@ by the same AST as the code, but this transformation is handled here.
            | ElimOr AST AST AST -- Or LeftBody RightBody
            | Contradiction
            | ElimContradiction AST AST -- Contradiction Body [does this have a body? contradiction usually means done]
+           -- [will this need equality type and reflexivity?]
            -- value nodes
            | VNatural Int -- Value
            | VFloat Float -- Value [is this needed? or just define as a pair or in STL]
@@ -72,9 +73,10 @@ by the same AST as the code, but this transformation is handled here.
            -- [how to use a char? is char usage STL?]
            | IndBoolean AST AST AST -- Bool BodyT BodyF
            | IndList AST AST AST -- List BodyL BodyE [is this correct?]
-           -- [how to use a symbol?]
-           -- [how to use null?]
-           -- [how to use undefined?]
+           -- [how to use a symbol? just equality?]
+           -- [how to use null? just equality?]
+           -- [how to use undefined? just equality?]
+           | Insert
 \end{code}
 
 The first step in parsing the proof code is, of course, lexifying it. This step
