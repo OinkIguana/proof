@@ -1,5 +1,5 @@
 // proof lines (by default) begin with >, to set them apart from code lines
-// this symbol can be overridden if it causes issues with a given language
+// this symbol can be overridden if it causes issues with the actual language
 > let EvenNumber : Natural → Type ≡ λ n → ∃ (m : Natural) → m + m = n
 
 > let fibonacci : Natural → Natural ≡ †
@@ -31,7 +31,7 @@ function cons(arr, val) {
   return [...arr, val];
 }
 
-> let append[T : Type, n : Number, m: Number] : List[T, n] → List[T, m] → List[T, n + m] ≡ †
+> let append[T : Type, n : Number, m : Number] : List[T, n] → List[T, m] → List[T, n + m] ≡ †
 function append(left, right) {
   return [...left, ...right];
 }

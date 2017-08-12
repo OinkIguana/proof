@@ -54,6 +54,11 @@ import Result
   Let { Lexer.Let }
   EOF { Lexer.EOF }
 
+%nonassoc '>' '<' '='
+%left '&' '|'
+%left '+' '-'
+%left '*' '/' '%'
+
 %%
 
 Program   : BOF decls EOF                       { Scope (reverse $2) }
@@ -75,12 +80,12 @@ type      : TypeOf type                         { TypeOf $2 }
           | '∃' '(' ann ')' '→' impl            { Exists $3 $6 }
           | type '|' type                       { Or $1 $3 }
           | type '&' type                       { And $1 $3 }
-          | Type                                { TypeOf (TypeOf VNull) }
-          | TNatural                            { TypeOf (VNatural 0) }
-          | TBoolean                            { TypeOf (VBoolean True) }
-          | TList                               { TypeOf VEmpty }
-          | TChar                               { TypeOf (VChar 'a') }
-          | TSymbol                             { TypeOf (VSymbol "") }
+          | Type                                { ID "Type" (ArgumentList []) }
+          | TNatural                            { ID "Natural" (ArgumentList []) }
+          | TBoolean                            { ID "Boolean" (ArgumentList []) }
+          | TList arglist                       { ID "List" (ArgumentList $2) }
+          | TChar                               { ID "Char" (ArgumentList []) }
+          | TSymbol                             { ID "Symbol" (ArgumentList []) }
 arglist   : '[' vallist ']'                     { $2 }
           | {- empty -}                         { [] }
 vallist   : val ',' vallist                     { $1 : $3 }
@@ -101,11 +106,23 @@ val       : True                                { VBoolean True }
           | '⊥'                                 { Contradiction }
           | func                                { $1 }
           | '(' callable val ')'                { Application $2 $3 }
+          | '(' val ')'                         { $2 }
+          | val '+' val                         { Application (Application (BuiltIn "+") $1) $3 }
+          | val '-' val                         { Application (Application (BuiltIn "-") $1) $3 }
+          | val '*' val                         { Application (Application (BuiltIn "*") $1) $3 }
+          | val '/' val                         { Application (Application (BuiltIn "/") $1) $3 }
+          | val '%' val                         { Application (Application (BuiltIn "%") $1) $3 }
+          | val '<' val                         { Application (Application (BuiltIn "<") $1) $3 }
+          | val '>' val                         { Application (Application (BuiltIn ">") $1) $3 }
+          | val '=' val                         { Application (Application (BuiltIn "=") $1) $3 }
+          | val '&' val                         { Application (Application (BuiltIn "&") $1) $3 }
+          | val '|' val                         { Application (Application (BuiltIn "|") $1) $3 }
           | ID                                  { ID $1 (ArgumentList []) }
+          | type                                { $1 }
 impl      : '†'                                 { Insert }
           | val                                 { $1 }
 
 {
 parseError :: [Lexer.Token] -> Result a
-parseError _ = Fail "Parse Error"
+parseError tokens = Fail ("Parse Error at " ++ (show tokens))
 }

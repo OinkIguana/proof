@@ -43,14 +43,12 @@ module AST where
            | VNull -- the empty value
            | VUndefined -- the non-existent value
            -- induction [do these need that 4th param like last time?]
+           -- this needs a way to write induction in the code!!
            | IndNatural AST AST AST -- Int BodyS BodyZ
-           -- [how to use a float? is float usage STL?]
-           -- [how to use a char? is char usage STL?]
            | IndBoolean AST AST AST -- Bool BodyT BodyF
            | IndList AST AST AST -- List BodyL BodyE [is this correct?]
-           -- [how to use a symbol? just equality?]
-           -- [how to use null? just equality?]
-           -- [how to use undefined? just equality?]
            | Insert
+           | BuiltIn String -- name
+           deriving (Show, Eq)
 \end{code}
 \end{document}
