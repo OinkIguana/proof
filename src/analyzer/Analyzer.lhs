@@ -16,7 +16,7 @@ module Analyzer where
 
 The analyze function is the heart of this whole system, kicking off the whole
 process of inferring and checking types. If all works out correctly, it returns
-a \ident{True}. If not, an \ident{AnalysisError}.
+\ident{Ok True}. If not, a \ident{Fail} with a reason.
 
 \begin{code}
   analyze :: AST -> Result Bool
