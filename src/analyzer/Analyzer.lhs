@@ -10,8 +10,6 @@ ensures that everything is valid.
 
 \begin{code}
 module Analyzer where
-  import Data.Map (Map)
-  import qualified Data.Map.Strict as Map
   import AST
   import Result
 \end{code}
