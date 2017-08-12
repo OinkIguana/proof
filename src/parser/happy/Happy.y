@@ -16,6 +16,7 @@ import Result
   Natural { Lexer.Natural $$ }
   Undefined { Lexer.Undefined }
   Null { Lexer.Null }
+  Import { Lexer.Import }
   '(' { Lexer.LParen }
   ')' { Lexer.RParen }
   '[' { Lexer.LBrack }
@@ -61,7 +62,12 @@ import Result
 
 %%
 
-Program   : BOF decls EOF                       { Scope (reverse $2) }
+Program   : BOF imports decls EOF               { Scope $2 (reverse $3) }
+imports   : imports import                      { $2 : $1 }
+          | {- empty -}                         { [] }
+import    : Import importpath                   { ImportPath $2 }
+importpath: importpath ID                       { $2 : $1 }
+          | ID                                  { [$1] }
 decls     : decls decl                          { $2 : $1 }
           | {- empty -}                         { [] }
 decl      : Let id ':' type '≡' impl            { Let $2 $4 $6 }

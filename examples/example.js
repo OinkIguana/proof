@@ -1,7 +1,7 @@
+> import proofs 
+
 // proof lines (by default) begin with >, to set them apart from code lines
 // this symbol can be overridden if it causes issues with the actual language
-> let EvenNumber : Natural → Type ≡ λ n → ∃ (m : Natural) → m + m = n
-
 > let fibonacci : Natural → Natural ≡ †
 function fibonacci(term) {
   let [a, b] = [1, 1];

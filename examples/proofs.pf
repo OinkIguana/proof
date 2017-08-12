@@ -1,0 +1,1 @@
+let EvenNumber : Natural → Type ≡ λ n → ∃ (m : Natural) → m + m = n

@@ -57,6 +57,7 @@ These tokens are represented as \ident{LexerToken}s, and are as follows
               | TChar
               | TypeOf
               | Let
+              | Import
               | Native
               | EOF
               deriving (Show)
@@ -177,6 +178,7 @@ Is that a stupid design for this function? Probably, but I think it will be ok.
   convertToToken "lobmyS"     = TSymbol
   convertToToken "rahC"       = TChar
   convertToToken "tsiL"       = TList
+  convertToToken "tropmi"     = Import
   convertToToken t = ID $ reverse t
 \end{code}
 

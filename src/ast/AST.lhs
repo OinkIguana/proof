@@ -9,7 +9,8 @@ The AST is the internal representation of a proof program.
 
 \begin{code}
 module AST where
-  data AST = Scope [AST] -- DeclList
+  data AST = Scope [AST] [AST] -- [ImportPath] Decls
+           | ImportPath [String] -- path
            | ID String AST -- name ArgumentList
            | ArgumentList [AST] -- [Annotation]
            | TypeOf AST -- Value
