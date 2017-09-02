@@ -57,7 +57,7 @@ actual code is returned, with all proofs stripped out.
   compile file =
     let (proof, code) = (takeProofs lineStart file, takeCode lineStart file) in
       parseProofs proof
-      `thenR` \x -> check (x `annotates` parseCode code)
+      `thenR` \x -> check x -- check (x `annotates` parseCode code)
       `thenR` \x -> Ok code
 \end{code}
 

@@ -12,7 +12,7 @@ ensures that everything is valid.
 module Analyzer where
   import AST
   import Result
-  import Data.Map.Strict
+  import Data.Map.Strict (fromList, Map, insert)
   import qualified Data.Map.Strict as Map
 \end{code}
 
@@ -23,6 +23,10 @@ process of inferring and checking types. If all works out correctly, it returns
 \begin{code}
   analyze :: AST -> Result Bool
   analyze ast = case ast of
+    Scope imports decls ->
+      case foldl foldDecls (Ok $ fromList []) decls of
+        Ok _ -> Ok True
+        Fail reason -> Fail reason
     Annotation lhs rhs -> typecheck (fromList []) lhs rhs
     _ -> Ok True
 \end{code}
@@ -30,8 +34,14 @@ process of inferring and checking types. If all works out correctly, it returns
 \begin{code}
   type Context = Map String AST
 
+  foldDecls :: Result Context -> AST -> Result Context
+  foldDecls (Ok ctx) (Let (ID name) t body) =
+    typecheck ctx body t `thenR` \_ -> Ok (insert name body ctx)
+  foldDecls (Fail r) _ = Fail r
+
   typecheck :: Context -> AST -> AST -> Result Bool
   typecheck ctx lhs rhs = case lhs of
+    Insert -> Ok True -- TODO: implement code insertion
     Function (ID param) body ->
       weakreduce ctx rhs `thenR` \reduced -> case reduced of
          Arrow (Annotation (ID "_") tl) tr -> typecheck (insert param tl ctx) body tr
@@ -77,6 +87,15 @@ process of inferring and checking types. If all works out correctly, it returns
        let newctx = if x == "_" then ctx else insert x a ctx in
         strongreduce newctx b `thenR` \rb ->
           Ok $ Arrow (Annotation (ID x) ra) rb
+    Function (ID x) b -> strongreduce (insert x (ID x) ctx) b `thenR` \body -> Ok $ Function (ID x) body
+    Application f a ->
+      strongreduce ctx f `thenR` \fr ->
+      strongreduce ctx a `thenR` \fa ->
+        case fr of
+          Function (ID param) body -> strongreduce ctx (substituteAST param fa body)
+          _ -> Ok $ Application fr fa
+    Annotation expr _ -> strongreduce ctx expr
+
 \end{code}
 
 \begin{code}

@@ -50,7 +50,7 @@ code at the \texttt{Insert} points and annotating wherever possible.
 
 \begin{code}
   annotates :: AST -> AST -> AST
-  annotates a b = a
+  annotates = Annotation
 \end{code}
 
 \end{document}
