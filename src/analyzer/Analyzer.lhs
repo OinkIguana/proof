@@ -12,6 +12,7 @@ ensures that everything is valid.
 module Analyzer where
   import AST
   import Result
+  import qualified Data.Map.Strict as Map
 \end{code}
 
 The analyze function is the heart of this whole system, kicking off the whole
@@ -20,7 +21,41 @@ process of inferring and checking types. If all works out correctly, it returns
 
 \begin{code}
   analyze :: AST -> Result Bool
-  analyze ast = Ok True
+  analyze ast = case ast of
+    Annotation lhs rhs -> typecheck (Map.fromList []) lhs rhs
+    _ -> Ok True
 \end{code}
 
+\begin{code}
+  type Context = Map.Map String AST
+
+  typecheck :: Context -> AST -> AST -> Result Bool
+  typecheck ctx lhs rhs = case lhs of
+    Function (ID param _) body ->
+      weakreduce ctx rhs `thenR` \reduced -> case reduced of
+         Arrow (Annotation (ID "_" _) tl) tr -> typecheck (Map.insert param tl ctx) body tr
+         Arrow (Annotation (ID name _) tl) tr -> typecheck (Map.insert param tl ctx) body (substitute name param tr)
+         _ -> Fail $ show lhs ++ " is not of expected type " ++ show rhs
+    _ -> typeinfer ctx lhs `thenR` \t ->
+      if t == rhs then Ok True
+      else Fail $ "Could not infer type of (" ++ show lhs ++ ") as (" ++ show rhs ++ ")"
+\end{code}
+
+\begin{code}
+  typeinfer :: Context -> AST -> Result AST
+  typeinfer ctx expr = case expr of
+    ElimContradiction cont body -> typecheck ctx cont Contradiction `thenR` \ok -> typeinfer ctx body
+    _ -> Fail $ "Cannot infer type of " ++ show expr
+\end{code}
+
+\begin{code}
+  weakreduce :: Context -> AST -> Result AST
+  weakreduce ctx name = Ok $ ID "_" $ ArgumentList []
+\end{code}
+
+\begin{code}
+  substitute :: String -> String -> AST -> AST
+  substitute old new body = body
+
+\end{code}
 \end{document}

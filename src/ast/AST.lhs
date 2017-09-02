@@ -14,7 +14,7 @@ module AST where
            | ID String AST -- name ArgumentList
            | ArgumentList [AST] -- [Annotation]
            | TypeOf AST -- Value
-           | Annotation String AST -- name Type
+           | Annotation AST AST -- name Type
            | Let AST AST AST -- ID Type Body
            | Arrow AST AST -- Annotation Type
            | Function AST AST -- ID Body

@@ -77,11 +77,11 @@ paramlist : '[' annlist ']'                     { $2 }
 annlist   : ann ',' annlist                     { $1 : $3 }
           | ann                                 { [$1] }
           | {- empty -}                         { [] }
-ann       : ID ':' type                         { Annotation $1 $3 }
+ann       : id ':' type                         { Annotation $1 $3 }
 type      : TypeOf type                         { TypeOf $2 }
           | ID arglist                          { ID $1 (ArgumentList $2) }
-          | '¬' type                            { Arrow (Annotation "_" $2) Contradiction }
-          | type '→' type                       { Arrow (Annotation "_" $1) $3 }
+          | '¬' type                            { Arrow (Annotation (ID "_" (ArgumentList [])) $2) Contradiction }
+          | type '→' type                       { Arrow (Annotation (ID "_" (ArgumentList [])) $1) $3 }
           | '∀' '(' ann ')' '→' impl            { Arrow $3 $6 }
           | '∃' '(' ann ')' '→' impl            { Exists $3 $6 }
           | type '|' type                       { Or $1 $3 }
