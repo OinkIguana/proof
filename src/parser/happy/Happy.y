@@ -71,7 +71,7 @@ importpath: importpath ID                       { $2 : $1 }
 decls     : decls decl                          { $2 : $1 }
           | {- empty -}                         { [] }
 decl      : Let id ':' type '≡' impl            { Let $2 $4 $6 }
-id        : ID paramlist                        { ID $1 (ArgumentList $2) }
+id        : ID                                  { ID $1 }
 paramlist : '[' annlist ']'                     { $2 }
           | {- empty -}                         { [] }
 annlist   : ann ',' annlist                     { $1 : $3 }
@@ -79,27 +79,27 @@ annlist   : ann ',' annlist                     { $1 : $3 }
           | {- empty -}                         { [] }
 ann       : id ':' type                         { Annotation $1 $3 }
 type      : TypeOf type                         { TypeOf $2 }
-          | ID arglist                          { ID $1 (ArgumentList $2) }
-          | '¬' type                            { Arrow (Annotation (ID "_" (ArgumentList [])) $2) Contradiction }
-          | type '→' type                       { Arrow (Annotation (ID "_" (ArgumentList [])) $1) $3 }
+          | ID                                  { ID $1 }
+          | '¬' type                            { Arrow (Annotation (ID "_") $2) Contradiction }
+          | type '→' type                       { Arrow (Annotation (ID "_") $1) $3 }
           | '∀' '(' ann ')' '→' impl            { Arrow $3 $6 }
           | '∃' '(' ann ')' '→' impl            { Exists $3 $6 }
           | type '|' type                       { Or $1 $3 }
           | type '&' type                       { And $1 $3 }
-          | Type                                { ID "Type" (ArgumentList []) }
-          | TNatural                            { ID "Natural" (ArgumentList []) }
-          | TBoolean                            { ID "Boolean" (ArgumentList []) }
-          | TList arglist                       { ID "List" (ArgumentList $2) }
-          | TChar                               { ID "Char" (ArgumentList []) }
-          | TSymbol                             { ID "Symbol" (ArgumentList []) }
+          | Type                                { ID "Type" }
+          | TNatural                            { ID "Natural" }
+          | TBoolean                            { ID "Boolean" }
+          | TList                               { ID "List" }
+          | TChar                               { ID "Char" }
+          | TSymbol                             { ID "Symbol" }
 arglist   : '[' vallist ']'                     { $2 }
           | {- empty -}                         { [] }
 vallist   : val ',' vallist                     { $1 : $3 }
           | val                                 { [$1] }
           | {- empty -}                         { [] }
-func      : 'λ' ID '→' val                      { Function (ID $2 (ArgumentList [])) $4 }
+func      : 'λ' ID '→' val                      { Function (ID $2) $4 }
 callable  : '(' func ')'                        { $2 }
-          | ID                                  { ID $1 (ArgumentList []) }
+          | ID                                  { ID $1 }
 val       : True                                { VBoolean True }
           | False                               { VBoolean False }
           | Natural                             { VNatural $1 }
@@ -123,7 +123,7 @@ val       : True                                { VBoolean True }
           | val '=' val                         { Application (Application (BuiltIn "=") $1) $3 }
           | val '&' val                         { Application (Application (BuiltIn "&") $1) $3 }
           | val '|' val                         { Application (Application (BuiltIn "|") $1) $3 }
-          | ID                                  { ID $1 (ArgumentList []) }
+          | ID                                  { ID $1 }
           | type                                { $1 }
 impl      : '†'                                 { Insert }
           | val                                 { $1 }

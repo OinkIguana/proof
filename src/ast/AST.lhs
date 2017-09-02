@@ -11,7 +11,7 @@ The AST is the internal representation of a proof program.
 module AST where
   data AST = Scope [AST] [AST] -- [ImportPath] Decls
            | ImportPath [String] -- path
-           | ID String AST -- name ArgumentList
+           | ID String -- name ArgumentList
            | ArgumentList [AST] -- [Annotation]
            | TypeOf AST -- Value
            | Annotation AST AST -- name Type

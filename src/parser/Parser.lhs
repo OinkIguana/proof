@@ -28,7 +28,7 @@ lexer/parser of the language being proven.
   parseCode code = transformAST NativeASTNode
 
   transformAST :: NativeAST -> AST
-  transformAST native = ID "The code" VEmpty
+  transformAST native = ID "The code"
 \end{code}
 
 Once the code has been turned into a NativeAST, it is then transformed into

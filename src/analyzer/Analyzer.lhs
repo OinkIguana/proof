@@ -12,6 +12,7 @@ ensures that everything is valid.
 module Analyzer where
   import AST
   import Result
+  import Data.Map.Strict
   import qualified Data.Map.Strict as Map
 \end{code}
 
@@ -22,22 +23,23 @@ process of inferring and checking types. If all works out correctly, it returns
 \begin{code}
   analyze :: AST -> Result Bool
   analyze ast = case ast of
-    Annotation lhs rhs -> typecheck (Map.fromList []) lhs rhs
+    Annotation lhs rhs -> typecheck (fromList []) lhs rhs
     _ -> Ok True
 \end{code}
 
 \begin{code}
-  type Context = Map.Map String AST
+  type Context = Map String AST
 
   typecheck :: Context -> AST -> AST -> Result Bool
   typecheck ctx lhs rhs = case lhs of
-    Function (ID param _) body ->
+    Function (ID param) body ->
       weakreduce ctx rhs `thenR` \reduced -> case reduced of
-         Arrow (Annotation (ID "_" _) tl) tr -> typecheck (Map.insert param tl ctx) body tr
-         Arrow (Annotation (ID name _) tl) tr -> typecheck (Map.insert param tl ctx) body (substitute name param tr)
+         Arrow (Annotation (ID "_") tl) tr -> typecheck (insert param tl ctx) body tr
+         Arrow (Annotation (ID name) tl) tr -> typecheck (insert param tl ctx) body (substitute name param tr)
          _ -> Fail $ show lhs ++ " is not of expected type " ++ show rhs
     _ -> typeinfer ctx lhs `thenR` \t ->
-      if t == rhs then Ok True
+      if t == rhs
+      then Ok True
       else Fail $ "Could not infer type of (" ++ show lhs ++ ") as (" ++ show rhs ++ ")"
 \end{code}
 
@@ -50,12 +52,40 @@ process of inferring and checking types. If all works out correctly, it returns
 
 \begin{code}
   weakreduce :: Context -> AST -> Result AST
-  weakreduce ctx name = Ok $ ID "_" $ ArgumentList []
+  weakreduce ctx expr =
+    case expr of
+      ID name ->
+        case Map.lookup name ctx of
+          Just reduction -> Ok reduction
+          Nothing -> Ok $ ID name
+      Application func val ->
+        weakreduce ctx func `thenR` \fr ->
+          case fr of
+            Function (ID param) body -> weakreduce ctx $ substituteAST param val body
+            _ -> Ok $ Application fr val
+      _ -> Ok expr
+\end{code}
+
+\begin{code}
+  strongreduce :: Context -> AST -> Result AST
+  strongreduce ctx expr = case expr of
+    ID name -> case Map.lookup name ctx of
+      Just reduction -> Ok reduction
+      Nothing -> Ok expr
+    Arrow (Annotation (ID x) a) b ->
+      strongreduce ctx a `thenR` \ra ->
+       let newctx = if x == "_" then ctx else insert x a ctx in
+        strongreduce newctx b `thenR` \rb ->
+          Ok $ Arrow (Annotation (ID x) ra) rb
 \end{code}
 
 \begin{code}
   substitute :: String -> String -> AST -> AST
   substitute old new body = body
+\end{code}
 
+\begin{code}
+  substituteAST :: String -> AST -> AST -> AST
+  substituteAST old new body = body
 \end{code}
 \end{document}
